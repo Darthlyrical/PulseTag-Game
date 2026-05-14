@@ -1,6 +1,6 @@
 # PulseTag — Project Handoff
 
-_Last updated: 2026-05-13_
+_Last updated: 2026-05-14_
 
 ---
 
@@ -46,14 +46,15 @@ Nothing has been built yet. The project is in initial setup. No TypeScript sourc
 - [x] Git repo initialized
 - [x] GitHub repo created (`Darthlyrical/PulseTag-Game`, private)
 - [x] Initial project structure committed
+- [x] TypeScript installed as dev dependency (`typescript ^6.0.3`)
+- [x] `tsconfig.json` configured (target: ES2020, commonjs, strict mode, src/ → dist/)
+- [x] Core types defined in `src/types.ts` — `Team`, `PlayerStatus`, `GameStatus`, `Player`, `ShotEvent`, `HitResult`
 
 ---
 
 ## What's Next
 
-- [ ] Set up TypeScript (install `typescript`, create `tsconfig.json`)
-- [ ] Define core types: `Team`, `PlayerStatus`, `GameStatus`, `ShotEvent`, `HitResult`, `Player`
-- [ ] Build `Player` initialization logic
+- [ ] Build player logic (`src/player.ts`) — function to create and initialize a player
 - [ ] Build hit processing logic (validates team, invulnerability, applies damage)
 - [ ] Build game state machine (waiting → countdown → active → finished)
 - [ ] Build terminal simulation to run a full game
@@ -108,7 +109,11 @@ Game logic is always kept separate from hardware logic. The simulation phase pro
 ```
 PulseTag-Game/
 ├── HANDOFF.md              ← you are here
+├── README.md
 ├── package.json
+├── tsconfig.json
+├── src/
+│   └── types.ts            ← all shared types (Team, Player, ShotEvent, HitResult, etc.)
 ├── Agent Files/
 │   └── PulseTag.md         ← full project spec
 └── memory/                 ← Claude's persistent memory (not game code)
