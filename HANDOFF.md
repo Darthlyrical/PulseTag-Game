@@ -1,6 +1,6 @@
 # PulseTag — Project Handoff
 
-_Last updated: 2026-05-14_
+_Last updated: 2026-05-15_
 
 ---
 
@@ -20,9 +20,9 @@ This is a living document. It gets updated every time work is pushed to the repo
 
 ## Current Phase
 
-**Phase 1 — Pure TypeScript Simulation**
+**Phase 1 — Complete. Moving to Phase 2 — Local Game Engine.**
 
-Nothing has been built yet. The project is in initial setup. No TypeScript source files exist. The next step is to scaffold the TypeScript project and begin building the core types and game engine.
+Phase 1 simulation is fully working. The terminal simulation runs a complete match, processes shots, tracks health and score, and declares a winner.
 
 ---
 
@@ -49,15 +49,28 @@ Nothing has been built yet. The project is in initial setup. No TypeScript sourc
 - [x] TypeScript installed as dev dependency (`typescript ^6.0.3`)
 - [x] `tsconfig.json` configured (target: ES2020, commonjs, strict mode, src/ → dist/)
 - [x] Core types defined in `src/types.ts` — `Team`, `PlayerStatus`, `GameStatus`, `Player`, `ShotEvent`, `HitResult`
+- [x] Player creation logic — `src/player.ts` — `createPlayer()` with defaults (health: 5, status: "alive")
+- [x] Hit processing logic — `src/combat.ts` — `processHit()` validates team and applies damage
+- [x] Game engine — `src/gameEngine.ts` — manages full game state, score, and win condition
+- [x] Terminal simulation — `src/index.ts` — runs a complete match and declares a winner
 
 ---
 
 ## What's Next
 
-- [ ] Build player logic (`src/player.ts`) — function to create and initialize a player
-- [ ] Build hit processing logic (validates team, invulnerability, applies damage)
-- [ ] Build game state machine (waiting → countdown → active → finished)
-- [ ] Build terminal simulation to run a full game
+- [ ] Phase 2: Add event system (emit events on hit, elimination, game over)
+- [ ] Phase 2: Add proper cooldown logic (300ms between shots)
+- [ ] Phase 2: Add invulnerability timer (~1 second after being hit)
+- [ ] Phase 2: Add respawn timer (~5 seconds after elimination)
+- [ ] Phase 2: Refine state transitions with proper countdown logic
+
+---
+
+## Known Limitations (Phase 1)
+
+- Invulnerability check is disabled — players can be hit repeatedly with no protection window. Will be re-enabled in Phase 2 with a real timer.
+- `startGame()` skips the countdown instantly — no delay between `"countdown"` and `"active"`.
+- Shots are hardcoded in `index.ts` — no real input system yet.
 
 ---
 
@@ -113,7 +126,12 @@ PulseTag-Game/
 ├── package.json
 ├── tsconfig.json
 ├── src/
-│   └── types.ts            ← all shared types (Team, Player, ShotEvent, HitResult, etc.)
+│   ├── types.ts            ← all shared types (Team, Player, ShotEvent, HitResult, etc.)
+│   ├── player.ts           ← createPlayer() factory function
+│   ├── combat.ts           ← processHit() — validates and applies a shot
+│   ├── gameEngine.ts       ← game state, startGame(), fireShot(), getState()
+│   └── index.ts            ← terminal simulation entry point
+├── dist/                   ← compiled JavaScript output (auto-generated, don't edit)
 ├── Agent Files/
 │   └── PulseTag.md         ← full project spec
 └── memory/                 ← Claude's persistent memory (not game code)
