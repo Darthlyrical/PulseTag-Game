@@ -17,6 +17,10 @@ let state: GameState = {
   score: { red: 0, blue: 0 },
 };
 
+function sleep(ms: number): Promise<void>{
+  return new Promise((resolve) =>)
+}
+
 export function startGame(): void {
   state.status = "countdown";
   state.status = "active";
