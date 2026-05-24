@@ -18,7 +18,7 @@ let state: GameState = {
 };
 
 function sleep(ms: number): Promise<void>{
-  return new Promise((resolve) =>)
+  return new Promise((resolve) => setTimeout(resolve, ms))
 }
 
 export function startGame(): void {
