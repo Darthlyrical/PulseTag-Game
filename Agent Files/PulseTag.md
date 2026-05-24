@@ -453,3 +453,189 @@ Possible future directions:
 
 ## Recommended Development Strategy
 Build small vertical slices first before expanding scope.
+
+---
+
+# Arm Piece Feature — Full Plan
+
+Last Updated: 2026-05-24
+
+---
+
+## Overview
+
+The arm piece is a wearable display/controller worn on each player's arm. It serves three purposes:
+
+1. **Stats display** — shows health, score, game status, active shot type, and disabled status
+2. **Shot type selection** — lets the player cycle between shot modes before firing
+3. **Comms** — lets players send preset quick signals to each other
+
+In Phase 1 (simulation), the arm piece is a console readout and a set of functions. In later phases it becomes a physical OLED screen + buttons on the wrist.
+
+---
+
+## Shot Types — Finalized Design
+
+| Type        | Damage | Notes                                      |
+|-------------|--------|--------------------------------------------|
+| `standard`  | 2      | Baseline shot                              |
+| `rapid`     | 1      | Lowest damage, fast cooldown               |
+| `charged`   | 3      | Highest damage, slow cooldown              |
+| `disabling` | 0      | Disables target from firing for 10 seconds |
+
+---
+
+## Disabling Shot Rules
+
+- Deals **0 damage**
+- Prevents the target from firing for **10 seconds**
+- The disable is **cancelled immediately** if the disabled player takes any damage
+- If the target is **already disabled**, the shot does **nothing** — timer is not reset or extended
+- Each player has **exactly 3 disabling shots per game** — charges do not refill
+- A charge is only spent when the shot **successfully disables** the target (i.e. not when ignored)
+
+---
+
+## Comms System
+
+A preset quick-signal system. One player sends a signal, both players see it in the terminal.
+
+### Planned Signals
+- `"reloading"`
+- `"incoming"`
+- `"attacking"`
+
+### Hardware future: buzzer pattern or LED flash on both vests to represent the signal.
+
+---
+
+## Type Changes Required
+
+### New types to add to `types.ts`
+
+```ts
+type ShotType = "standard" | "rapid" | "charged" | "disabling";
+
+type CommsSignal = "reloading" | "incoming" | "attacking";
+```
+
+### Updated `Player` type
+
+Add two new fields:
+
+```ts
+shotType: ShotType;       // currently selected shot mode, defaults to "standard"
+disabledUntil: number;    // timestamp; 0 = not disabled; >0 = disabled until that time
+disablingCharges: number; // starts at 3, counts down on successful disables
+```
+
+### Updated `ShotEvent` type
+
+Add one new field:
+
+```ts
+shotType: ShotType; // what type of shot was fired
+```
+
+### Updated `HitResult` discriminated union
+
+Add one new variant:
+
+```ts
+| { type: "disabled"; updatedPlayer: Player }
+```
+
+Add one new ignored reason:
+
+```ts
+reason: "friendly_fire" | "invulnerable" | "game_not_active" | "already_disabled"
+```
+
+---
+
+## Implementation Phases
+
+---
+
+### Phase A — `types.ts`
+
+**Goal:** Add all new types and update existing ones.
+
+**Changes:**
+1. Add `ShotType` union
+2. Add `CommsSignal` union
+3. Add `shotType`, `disabledUntil`, `disablingCharges` to `Player`
+4. Add `shotType` to `ShotEvent`
+5. Add `{ type: "disabled"; updatedPlayer: Player }` to `HitResult`
+6. Add `"already_disabled"` to the ignored reasons in `HitResult`
+
+**No logic yet — types only.**
+
+---
+
+### Phase B — `player.ts`
+
+**Goal:** Update `createPlayer` to include the new fields with correct defaults.
+
+**Changes:**
+- `shotType` defaults to `"standard"`
+- `disabledUntil` defaults to `0`
+- `disablingCharges` defaults to `3`
+
+---
+
+### Phase C — `combat.ts`
+
+**Goal:** Update hit processing to handle all four shot types and disable logic.
+
+**Changes:**
+1. Add a damage lookup object that maps each `ShotType` to its damage value
+2. Replace the hardcoded `shot.damage` usage with a lookup on `shot.shotType`
+3. Add an early-exit check: if `shot.shotType === "disabling"` and `target.disabledUntil > shot.timestamp`, return `{ type: "ignored", reason: "already_disabled" }`
+4. Add disabling shot handling: if `shot.shotType === "disabling"`, return `{ type: "disabled", updatedPlayer: { ...target, disabledUntil: shot.timestamp + 10000 } }`
+5. For `hit` and `eliminated` results: always set `disabledUntil: 0` on the `updatedPlayer` (damage cancels the disable)
+
+---
+
+### Phase D — `gameEngine.ts`
+
+**Goal:** Enforce disable blocking, charge spending, shot type selection, and comms.
+
+**Changes:**
+1. In `fireShot`: find the shooter in state, check `shooter.disabledUntil > Date.now()` — if true, return early (blocked)
+2. In `fireShot`: if shot type is `"disabling"` and `shooter.disablingCharges === 0`, return early (out of charges)
+3. In `fireShot`: after `processHit`, if result is `type: "disabled"`, decrement the shooter's `disablingCharges` by 1
+4. In `fireShot`: score only increments when the result is `"hit"` or `"eliminated"` (disabling shot does not count toward 5-hit win)
+5. Add `selectShotType(playerId: number, shotType: ShotType): void` — updates that player's `shotType` in state
+6. Add `sendComms(senderId: number, signal: CommsSignal): void` — logs a formatted line like `[COMMS] Player1 → incoming`
+
+---
+
+### Phase E — `armPiece.ts` (new file)
+
+**Goal:** Create the arm piece display function.
+
+**Changes:**
+- Export one function: `showArmPiece(playerId: number): void`
+- Reads current game state
+- Prints a formatted readout showing:
+  - Player name and team
+  - Current health (e.g. `HP: ███░░ 3/5`)
+  - Current score
+  - Active shot type
+  - Disabling charges remaining
+  - Disabled status (if active, show time remaining in seconds)
+  - Game status
+
+---
+
+## File Change Summary
+
+| File            | Status     | What changes                                               |
+|-----------------|------------|------------------------------------------------------------|
+| `types.ts`      | Update     | ShotType, CommsSignal, Player fields, ShotEvent, HitResult |
+| `player.ts`     | Update     | createPlayer defaults                                      |
+| `combat.ts`     | Update     | Damage lookup, disable logic, clear-on-damage              |
+| `gameEngine.ts` | Update     | Disable guard, charge guard, selectShotType, sendComms     |
+| `armPiece.ts`   | New file   | showArmPiece display function                              |
+
