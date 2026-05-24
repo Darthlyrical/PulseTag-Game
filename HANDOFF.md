@@ -1,6 +1,6 @@
 # PulseTag — Project Handoff
 
-_Last updated: 2026-05-15_
+_Last updated: 2026-05-20_
 
 ---
 
@@ -20,9 +20,11 @@ This is a living document. It gets updated every time work is pushed to the repo
 
 ## Current Phase
 
-**Phase 1 — Complete. Moving to Phase 2 — Local Game Engine.**
+**Phase 1 — Complete. Phase 2 — Local Game Engine in progress.**
 
 Phase 1 simulation is fully working. The terminal simulation runs a complete match, processes shots, tracks health and score, and declares a winner.
+
+Phase 2 has started. Currently working on countdown logic — a `sleep()` helper has been stubbed in `src/gameEngine.ts` but is incomplete. `startGame()` and `src/index.ts` have not been updated yet.
 
 ---
 
@@ -58,11 +60,11 @@ Phase 1 simulation is fully working. The terminal simulation runs a complete mat
 
 ## What's Next
 
-- [ ] Phase 2: Add event system (emit events on hit, elimination, game over)
+- [ ] Phase 2: Countdown logic — `sleep()` stubbed in `gameEngine.ts`, `startGame()` and `index.ts` not yet updated
 - [ ] Phase 2: Add proper cooldown logic (300ms between shots)
 - [ ] Phase 2: Add invulnerability timer (~1 second after being hit)
 - [ ] Phase 2: Add respawn timer (~5 seconds after elimination)
-- [ ] Phase 2: Refine state transitions with proper countdown logic
+- [ ] Phase 2: Add event system (emit events on hit, elimination, game over)
 
 ---
 
