@@ -639,3 +639,14 @@ reason: "friendly_fire" | "invulnerable" | "game_not_active" | "already_disabled
 | `gameEngine.ts` | Update     | Disable guard, charge guard, selectShotType, sendComms     |
 | `armPiece.ts`   | New file   | showArmPiece display function                              |
 
+---
+
+# Useful Commands
+
+## Git
+
+Check current branch:
+```bash
+git branch
+```
+The branch with `*` is your current one.
