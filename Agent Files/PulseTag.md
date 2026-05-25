@@ -468,7 +468,6 @@ The arm piece is a wearable display/controller worn on each player's arm. It ser
 
 1. **Stats display** — shows health, score, game status, active shot type, and disabled status
 2. **Shot type selection** — lets the player cycle between shot modes before firing
-3. **Comms** — lets players send preset quick signals to each other
 
 In Phase 1 (simulation), the arm piece is a console readout and a set of functions. In later phases it becomes a physical OLED screen + buttons on the wrist.
 
@@ -496,27 +495,12 @@ In Phase 1 (simulation), the arm piece is a console readout and a set of functio
 
 ---
 
-## Comms System
-
-A preset quick-signal system. One player sends a signal, both players see it in the terminal.
-
-### Planned Signals
-- `"reloading"`
-- `"incoming"`
-- `"attacking"`
-
-### Hardware future: buzzer pattern or LED flash on both vests to represent the signal.
-
----
-
 ## Type Changes Required
 
 ### New types to add to `types.ts`
 
 ```ts
 type ShotType = "standard" | "rapid" | "charged" | "disabling";
-
-type CommsSignal = "reloading" | "incoming" | "attacking";
 ```
 
 ### Updated `Player` type
@@ -563,8 +547,7 @@ reason: "friendly_fire" | "invulnerable" | "game_not_active" | "already_disabled
 
 **Changes:**
 1. Add `ShotType` union
-2. Add `CommsSignal` union
-3. Add `shotType`, `disabledUntil`, `disablingCharges` to `Player`
+2. Add `shotType`, `disabledUntil`, `disablingCharges` to `Player`
 4. Add `shotType` to `ShotEvent`
 5. Add `{ type: "disabled"; updatedPlayer: Player }` to `HitResult`
 6. Add `"already_disabled"` to the ignored reasons in `HitResult`
@@ -599,7 +582,7 @@ reason: "friendly_fire" | "invulnerable" | "game_not_active" | "already_disabled
 
 ### Phase D — `gameEngine.ts`
 
-**Goal:** Enforce disable blocking, charge spending, shot type selection, and comms.
+**Goal:** Enforce disable blocking, charge spending, and shot type selection.
 
 **Changes:**
 1. In `fireShot`: find the shooter in state, check `shooter.disabledUntil > Date.now()` — if true, return early (blocked)
@@ -607,7 +590,6 @@ reason: "friendly_fire" | "invulnerable" | "game_not_active" | "already_disabled
 3. In `fireShot`: after `processHit`, if result is `type: "disabled"`, decrement the shooter's `disablingCharges` by 1
 4. In `fireShot`: score only increments when the result is `"hit"` or `"eliminated"` (disabling shot does not count toward 5-hit win)
 5. Add `selectShotType(playerId: number, shotType: ShotType): void` — updates that player's `shotType` in state
-6. Add `sendComms(senderId: number, signal: CommsSignal): void` — logs a formatted line like `[COMMS] Player1 → incoming`
 
 ---
 
@@ -633,10 +615,10 @@ reason: "friendly_fire" | "invulnerable" | "game_not_active" | "already_disabled
 
 | File            | Status     | What changes                                               |
 |-----------------|------------|------------------------------------------------------------|
-| `types.ts`      | Update     | ShotType, CommsSignal, Player fields, ShotEvent, HitResult |
+| `types.ts`      | Update     | ShotType, Player fields, ShotEvent, HitResult              |
 | `player.ts`     | Update     | createPlayer defaults                                      |
 | `combat.ts`     | Update     | Damage lookup, disable logic, clear-on-damage              |
-| `gameEngine.ts` | Update     | Disable guard, charge guard, selectShotType, sendComms     |
+| `gameEngine.ts` | Update     | Disable guard, charge guard, selectShotType                |
 | `armPiece.ts`   | New file   | showArmPiece display function                              |
 
 
@@ -824,18 +806,6 @@ A small physical device separate from the blaster. Emits erratic IR signals in a
 
 ---
 
-## Team Comms Expansion
-
-The current comms plan (reloading / incoming / attacking signals) is built for 1v1. When the game expands to 2v2 or larger, comms needs:
-
-- Team-only signals vs. global signals
-- Class-specific signals (e.g. Support broadcasting heal availability)
-- More signal types relevant to team coordination
-
-Build on top of the existing comms system rather than replacing it.
-
----
-
 ## Persistent Player Profiles
 
 Tied to the leveling system. Each player has a profile that tracks:
@@ -846,4 +816,16 @@ Tied to the leveling system. Each player has a profile that tracks:
 - Possibly unlockable cosmetics or titles
 
 Relevant for Phase 5 (Polish) — mobile companion app or Bluetooth scoreboard.
+
+---
+
+# Useful Commands
+
+## Git
+
+Check current branch:
+```bash
+git branch
+```
+The branch with `*` is your current one.
 
