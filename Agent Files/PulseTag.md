@@ -639,3 +639,211 @@ reason: "friendly_fire" | "invulnerable" | "game_not_active" | "already_disabled
 | `gameEngine.ts` | Update     | Disable guard, charge guard, selectShotType, sendComms     |
 | `armPiece.ts`   | New file   | showArmPiece display function                              |
 
+
+
+---
+
+# Health System — Updated
+
+Last Updated: 2026-05-25
+
+Starting health is **100 HP** (updated from the original 5 HP prototype value).
+
+Damage values per shot type need to be revisited and finalized once all shot types across all classes are defined. Do not assume old damage values (1–3) are final at this scale.
+
+Win condition may also need to be revisited once damage values are set.
+
+---
+
+# Leveling System — Plan
+
+Last Updated: 2026-05-25
+
+## How Leveling Works
+
+Two layers of progression that stack:
+
+- **Per-game leveling** — you gain XP and level up mid-match as you score hits. Higher level = stronger abilities for that match.
+- **Persistent leveling** — levels carry over across multiple games. Encourages players to stick with one class long-term and rewards class loyalty.
+
+## What Levels Up
+
+Everything levels with your class level:
+
+- All shot types (damage, cooldown, or both)
+- All class-specific abilities (heal amount, UAV duration, grenade count, disable charges, etc.)
+- Overheal cap (see below)
+
+## Overheal Cap Scaling
+
+The Support class can overheal teammates above max HP. The cap scales with level:
+
+- Starts low (~10% above max HP)
+- Increases as the Support levels up
+- Exact values TBD when balancing begins
+
+## XP / Level Thresholds
+
+Not yet defined. To decide later:
+
+- What actions grant XP (hits, eliminations, heals, assists)
+- How many levels exist per class
+- Whether there is a level cap or prestige system
+
+---
+
+# Class System — Design
+
+Last Updated: 2026-05-25
+
+Players choose a class before the match. Classes define base stats, available shot types, and unique abilities. All abilities and shot types level up with the player's class level.
+
+---
+
+## Assault
+
+**Role:** Balanced all-rounder
+
+**Stats:** Standard health (100 HP), standard cooldowns
+
+**Shot types:** All four (standard, rapid, charged, disabling)
+
+**Ability:** None — full tool access is the identity of this class
+
+**Notes:** Good entry-level class. No weaknesses, no special power.
+
+---
+
+## Tank
+
+**Role:** Frontline absorber
+
+**Stats:** Higher health (exact value TBD), slower fire cooldown
+
+**Shot types:** Standard, charged
+
+**Ability:** Immune to disabling shots — cannot be disabled
+
+**Notes:** Built to take punishment and stay in the fight. Trades speed for durability.
+
+---
+
+## Sniper
+
+**Role:** High-damage single shot
+
+**Stats:** Standard health, long cooldown
+
+**Shot types:** Charged only (higher base damage than other classes, scales with level)
+
+**Ability:** Extended invulnerability window after taking a hit
+
+**Notes:** One trade at a time. High risk, high reward. Punishes players who miss.
+
+---
+
+## Scout
+
+**Role:** Fast harasser and intel gatherer
+
+**Stats:** Lower health (exact value TBD), fastest cooldown in the game
+
+**Shot types:** Rapid (default), standard
+
+**Ability:** UAV — reveals enemy health, shot type, and class on the arm piece display for a short duration. Duration and cooldown scale with level.
+
+**Notes:** Fragile but hard to pin down. UAV gives major information advantage.
+
+---
+
+## Demolitions
+
+**Role:** Area control
+
+**Stats:** Standard health, standard cooldowns
+
+**Shot types:** Standard, charged
+
+**Ability:** Grenade — a small physical device that emits erratic IR signals in all directions. Hits any player in range regardless of aim direction. Number of grenades per game scales with level.
+
+**Notes:** The grenade is the class identity. In simulation, modeled as a hit against all players within a defined radius.
+
+---
+
+## Support
+
+**Role:** Team sustain and control
+
+**Stats:** Standard health, slightly slower cooldown
+
+**Shot types:** Standard, disabling (more charges than Assault — scales with level)
+
+**Ability:** Heal shot — fires at a teammate to restore HP instead of dealing damage. Uses the same IR emitter but a different signal pattern. Friendly fire detection flips for this shot type (requires friendly target, blocked on enemies).
+
+**Heal shot details:**
+- Starts at 1 HP restored per shot
+- Heal amount scales with level
+- Can overheal up to a cap above max HP (starts ~10%, cap increases with level)
+- Cannot heal enemies
+
+**Notes:** Most team-dependent class. Useless in 1v1, strongest class in coordinated team play.
+
+---
+
+# Future Feature Backlog
+
+Last Updated: 2026-05-25
+
+These are captured ideas — not planned for immediate implementation. Add detail and phases when ready to build.
+
+---
+
+## UAV System
+
+A timed ability (Scout class). In simulation: reveals enemy stats (health, shot type, class) on the arm piece for a few seconds. In hardware: could be a physical drone with an IR emitter that can tag from above, or a passive camera/sensor relay.
+
+**Open questions:**
+- Can the UAV be shot down?
+- Does it move or hover in place?
+- Is there a cooldown between uses?
+
+---
+
+## Grenade
+
+A small physical device separate from the blaster. Emits erratic IR signals in all directions simultaneously when activated. Hits any player in range regardless of facing direction — solves the IR directionality problem through hardware rather than software.
+
+**Demolitions class ability.** Number of grenades per game scales with level.
+
+**In simulation:** modeled as a function that fires a hit against all active players within a defined radius value.
+
+**Open questions:**
+- Activation method (button, pin pull, timer)?
+- Does it deal damage, disable, or both?
+- Damage/disable duration values TBD
+
+---
+
+## Team Comms Expansion
+
+The current comms plan (reloading / incoming / attacking signals) is built for 1v1. When the game expands to 2v2 or larger, comms needs:
+
+- Team-only signals vs. global signals
+- Class-specific signals (e.g. Support broadcasting heal availability)
+- More signal types relevant to team coordination
+
+Build on top of the existing comms system rather than replacing it.
+
+---
+
+## Persistent Player Profiles
+
+Tied to the leveling system. Each player has a profile that tracks:
+
+- Main class
+- Persistent level per class
+- Match history
+- Possibly unlockable cosmetics or titles
+
+Relevant for Phase 5 (Polish) — mobile companion app or Bluetooth scoreboard.
+
