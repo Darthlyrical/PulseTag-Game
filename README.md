@@ -46,4 +46,4 @@ PulseTag is a hardware/software project combining infrared communication, wearab
 
 ## Status
 
-Currently in **Phase 1** — building and simulating the core game engine in TypeScript before any hardware is connected.
+Currently in **Phase 2** — Phase 1 simulation is complete. Now building the local game engine: countdown logic, cooldowns, invulnerability timers, respawn timers, and an event system.
