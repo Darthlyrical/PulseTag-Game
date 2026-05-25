@@ -1,6 +1,6 @@
 # PulseTag — Project Handoff
 
-_Last updated: 2026-05-20_
+_Last updated: 2026-05-25_
 
 ---
 
@@ -24,7 +24,7 @@ This is a living document. It gets updated every time work is pushed to the repo
 
 Phase 1 simulation is fully working. The terminal simulation runs a complete match, processes shots, tracks health and score, and declares a winner.
 
-Phase 2 has started. Currently working on countdown logic — a `sleep()` helper has been stubbed in `src/gameEngine.ts` but is incomplete. `startGame()` and `src/index.ts` have not been updated yet.
+Phase 2 is in progress. Countdown logic is mostly done — `sleep()` and `startGame()` are complete in `src/gameEngine.ts`. `src/index.ts` still needs the `async main()` wrapper. Arm piece feature (shot types, disable mechanic, arm display) has been fully planned in `Agent Files/PulseTag.md` and will be implemented after countdown is finished.
 
 ---
 
@@ -55,23 +55,29 @@ Phase 2 has started. Currently working on countdown logic — a `sleep()` helper
 - [x] Hit processing logic — `src/combat.ts` — `processHit()` validates team and applies damage
 - [x] Game engine — `src/gameEngine.ts` — manages full game state, score, and win condition
 - [x] Terminal simulation — `src/index.ts` — runs a complete match and declares a winner
+- [x] Phase 2: `sleep()` helper added to `gameEngine.ts`
+- [x] Phase 2: `startGame()` updated — now async, 3 second countdown before game goes active
 
 ---
 
 ## What's Next
 
-- [ ] Phase 2: Countdown logic — `sleep()` stubbed in `gameEngine.ts`, `startGame()` and `index.ts` not yet updated
-- [ ] Phase 2: Add proper cooldown logic (300ms between shots)
+- [ ] Phase 2: `index.ts` — wrap in `async main()` so `await startGame()` works (countdown fully done after this)
+- [ ] Phase 2: Arm piece — Phase A: update `types.ts` (ShotType, Player fields, ShotEvent, HitResult)
+- [ ] Phase 2: Arm piece — Phase B: update `player.ts` defaults
+- [ ] Phase 2: Arm piece — Phase C: update `combat.ts` (damage lookup, disable logic)
+- [ ] Phase 2: Arm piece — Phase D: update `gameEngine.ts` (disable guard, charge guard, selectShotType)
+- [ ] Phase 2: Arm piece — Phase E: new `armPiece.ts` (showArmPiece display)
+- [ ] Phase 2: Add cooldown logic (300ms between shots)
 - [ ] Phase 2: Add invulnerability timer (~1 second after being hit)
 - [ ] Phase 2: Add respawn timer (~5 seconds after elimination)
-- [ ] Phase 2: Add event system (emit events on hit, elimination, game over)
 
 ---
 
 ## Known Limitations (Phase 1)
 
 - Invulnerability check is disabled — players can be hit repeatedly with no protection window. Will be re-enabled in Phase 2 with a real timer.
-- `startGame()` skips the countdown instantly — no delay between `"countdown"` and `"active"`.
+- `index.ts` still calls `startGame()` without `await` — shots will fire before the game goes active until `main()` wrapper is added.
 - Shots are hardcoded in `index.ts` — no real input system yet.
 
 ---
@@ -131,8 +137,8 @@ PulseTag-Game/
 │   ├── types.ts            ← all shared types (Team, Player, ShotEvent, HitResult, etc.)
 │   ├── player.ts           ← createPlayer() factory function
 │   ├── combat.ts           ← processHit() — validates and applies a shot
-│   ├── gameEngine.ts       ← game state, startGame(), fireShot(), getState()
-│   └── index.ts            ← terminal simulation entry point
+│   ├── gameEngine.ts       ← game state, startGame() (async), fireShot(), getState()
+│   └── index.ts            ← terminal simulation entry point (main() wrapper pending)
 ├── dist/                   ← compiled JavaScript output (auto-generated, don't edit)
 ├── Agent Files/
 │   └── PulseTag.md         ← full project spec
