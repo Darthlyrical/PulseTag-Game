@@ -9,5 +9,8 @@ export function createPlayer(id: number, name: string, team: Team): Player {
     team,
     health: 5,
     status: "alive",
+    shotType: "standard",
+    disabledUntil: 0,
+    disablingCharges: 3
   };
 }

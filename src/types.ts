@@ -6,6 +6,14 @@ export type Team = "red" | "blue";
 // Anywhere you use a PlayerStatus, TypeScript knows exactly which values are valid.
 export type PlayerStatus = "alive" | "hit" | "respawning" | "eliminated";
 
+export type ShotType = "standard" | "rapid" | "charged" | "disabling";
+
+export type CommsSignal =
+  | "reloading"
+  | "incoming"
+  | "attacking"
+  | "need healing";
+
 //All the states the game itself can be in.
 export type GameStatus =
   | "waiting"
@@ -22,10 +30,14 @@ export type Player = {
   team: Team;
   health: number;
   status: PlayerStatus;
+  shotType: ShotType;
+  disabledUntil: number;
+  disablingCharges: number;
 };
 
 //Represents a single shot being fired. timestamp will be used for the cooldown and invulnerability logic.
 export type ShotEvent = {
+  shotType: ShotType;
   shooterId: number;
   shooterTeam: Team;
   damage: number;
@@ -39,6 +51,13 @@ export type HitResult =
   | { type: "hit"; updatedPlayer: Player }
   | {
       type: "ignored";
-      reason: "friendly_fire" | "invulnerable" | "game_not_active";
+      reason:
+        | "friendly_fire"
+        | "invulnerable"
+        | "game_not_active"
+        | "already_disabled";
     }
-  | { type: "eliminated"; updatedPlayer: Player };
+  | { type: "eliminated"; updatedPlayer: Player }
+  | { type: "disabled"; updatedPlayer: Player };
+
+
