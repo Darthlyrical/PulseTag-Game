@@ -96,18 +96,28 @@ Phase 2 is in progress. Countdown logic is mostly done — `sleep()` and `startG
 ## How to Pick Up On a New Machine
 
 ```bash
-# 1. Clone the repo
-git clone https://github.com/Darthlyrical/PulseTag-Game.git
-cd PulseTag-Game
+# 1. Clone the repo into a clean location (not the Desktop)
+git clone https://github.com/Darthlyrical/PulseTag-Game.git ~/Projects/PulseTag-Game
+cd ~/Projects/PulseTag-Game
 
-# 2. Install dependencies (once TypeScript is set up)
+# 2. Install dependencies
 npm install
 
 # 3. Read this file, then read Agent Files/PulseTag.md for full spec
 ```
 
-Then open this project with Claude Code and say:
+Then open Claude Code from inside the project folder:
+```bash
+cd ~/Projects/PulseTag-Game
+claude
+```
+
 > "Read the HANDOFF.md and let's continue from where we left off."
+
+**Important:** Always open Claude Code from the local clone on whichever machine you're on. Do not open it from an iCloud-synced copy of another machine's desktop — Claude Code won't have full file access and the workflow breaks.
+
+**Before switching machines:** push all changes and update this file.
+**After switching machines:** `git pull` first, then open Claude Code.
 
 ---
 
