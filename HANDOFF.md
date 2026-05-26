@@ -1,6 +1,6 @@
 # PulseTag — Project Handoff
 
-_Last updated: 2026-05-25_
+_Last updated: 2026-05-26_
 
 ---
 
@@ -24,7 +24,7 @@ This is a living document. It gets updated every time work is pushed to the repo
 
 Phase 1 simulation is fully working. The terminal simulation runs a complete match, processes shots, tracks health and score, and declares a winner.
 
-Phase 2 is in progress. Countdown is fully complete — `startGame()` is async with a 3-second sleep, and `index.ts` is wrapped in `async main()`. Arm piece implementation has begun: Phase A (types) and Phase B (player defaults) are done and compiling clean. Phase C (combat logic) is next.
+Phase 2 is in progress. Countdown is fully complete — `startGame()` is async with a 3-second sleep, and `index.ts` is wrapped in `async main()`. Arm piece Phases A, B, and C are done and compiling clean. Phase D (gameEngine updates) is next.
 
 ---
 
@@ -62,6 +62,7 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 - [x] Phase 2: Arm piece Phase A — `types.ts` updated with `ShotType`, `CommsSignal`, new `Player` fields (`shotType`, `disabledUntil`, `disablingCharges`), `shotType` on `ShotEvent`, `"disabled"` and `"already_disabled"` on `HitResult`
 - [x] Phase 2: Arm piece Phase B — `player.ts` updated with new field defaults (`shotType: "standard"`, `disabledUntil: 0`, `disablingCharges: 3`)
 - [x] Phase 2: Arm piece Phase C — `combat.ts` updated with damage lookup table, disabling shot logic, already-disabled guard, and disabledUntil reset on damage
+- [x] Hardware design session — full physical system designed and diagrammed (see Hardware Design section below)
 
 ---
 
@@ -75,11 +76,10 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 
 ---
 
-## Known Limitations (Phase 1)
+## Known Limitations (Phase 2)
 
 - Invulnerability check is disabled — players can be hit repeatedly with no protection window. Will be re-enabled in Phase 2 with a real timer.
 - Shots are hardcoded in `index.ts` — no real input system yet.
-- `damage` field on `ShotEvent` is still used in `index.ts` test calls but will be replaced by shot type damage lookup in Phase C.
 
 ---
 
@@ -91,6 +91,13 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 | Simulate first, hardware second | Reduces complexity; validates logic before wiring |
 | Discriminated unions for `HitResult` | Forces exhaustive handling of all outcomes |
 | Vertical slices over big architecture | Prevents over-scoping and overwhelm |
+| Single ESP32 + LiPo in vest | One brain, one battery — drives everything. Less weight, fewer failure points, one charge |
+| All input from gun buttons | Consistent input model pre-game and in-game. Armband is display-only |
+| Hold-to-enable safety | Safest option — buttons lock the moment thumb leaves. Can't accidentally leave unlocked |
+| Ambidextrous button layout | Same 4 GPIO pins, role flips in software via handedness setting in player profile |
+| BLE proximity radar (zones only) | ESP32 BLE built-in, no extra hardware. RSSI → 3 zones (close/medium/far). No direction — honest about what BLE can deliver |
+| Headband for headshot detection | IR receivers on the head add a skill-based damage layer without complicating the vest. Sniper class gets a multiplier bonus to reward precision. |
+| Barrel tip LED (shot type indicator) | Same location as IR emitter — doubles as visual feedback for firing and shot mode at a glance. No extra wiring run needed. |
 
 ---
 
@@ -158,6 +165,163 @@ PulseTag-Game/
 
 ---
 
-## Hardware Platform (future, Phase 3+)
+## Hardware Design (Phase 3+)
 
-Likely **ESP32** — low cost, WiFi/Bluetooth, good hobby ecosystem.
+All hardware design was diagrammed and locked in during a planning session on 2026-05-26. This section captures every decision. Nothing gets built until Phase 3, but these decisions are final for V1.
+
+### System Architecture
+
+One ESP32 and one LiPo battery live in the vest. They power and drive everything — the armband display and the blaster are both dumb hardware wired back to the single brain.
+
+```
+VEST (ESP32 + LiPo)
+  ├── IR receivers ×3       (hit detection, on vest panels)
+  ├── LED strip              (health + team color + hit flash)
+  ├── Buzzer                 (hit + elimination + respawn sounds)
+  ├── BLE radio              (built-in ESP32 — cross-player proximity)
+  ├── [cable → armband]      (display output via SPI/I2C)
+  └── [cable → blaster]      (GPIO input lines + IR emitter output)
+
+ARMBAND (display only — no processor, no battery)
+  └── Landscape TFT display  (driven by vest ESP32)
+
+BLASTER (inputs + IR emitter — no processor, no battery)
+  ├── IR emitter             (barrel tip — fires shots)
+  ├── LED                    (barrel tip — blinks on fire, color = shot type, TBD colors)
+  ├── Trigger                (GPIO → vest ESP32)
+  ├── Safety button          (GPIO → vest ESP32, hold-to-enable)
+  ├── Nav buttons ×4         (2 per side — GPIO → vest ESP32)
+  └── Confirm + back ×2      (GPIO → vest ESP32, thumb side)
+
+HEADBAND (input only — no processor, no battery)
+  └── IR receivers ×2        (one each side — headshot detection, wired to vest ESP32)
+```
+
+### Cable Routing
+
+Two separate cable paths, both originating from the vest:
+
+**Gun cable:**
+- Exits the bottom of the vest
+- Runs down the side of the body
+- Enters the grip/handle of the blaster
+- Straight braided cable in an armored/insulated housing (like Time Crisis arcade gun tether)
+- Fixed length
+
+**Armband cable:**
+- Routes from the vest through the chest area near the armpit
+- Runs down the inner arm to the armband display
+- Shorter run, no armored housing needed — tucked under armband strap
+
+### Vest
+
+- ESP32 + LiPo battery are the only active electronics
+- Three IR receivers spread across the front panels (left, center, right) for hit detection from multiple angles
+- LED strip runs across the chest — shows health bar, team color (red/blue), and flashes on hit
+- Buzzer mounted inside the shell — different tones for hit, elimination, respawn ready, game over (passive buzzer so ESP32 can play different tones via PWM)
+- Vibration motor for haptic hit feedback
+
+### Blaster
+
+- M16-style long barrel
+- IR emitter at the barrel tip
+- 4 nav buttons total — 2 on each face of the barrel (left face, right face), clustered near the front of the barrel in the support hand zone
+- Confirm + back buttons in the thumb zone (same face as nav buttons, same side — determined by handedness)
+- Safety button on the top-back of the gun in the trigger hand thumb zone
+- LED at the barrel tip alongside the IR emitter — blinks on every shot, color changes based on active shot type (exact colors TBD)
+
+**Ambidextrous button layout:**
+- Same 4 GPIO pins regardless of handedness
+- Right-handed: left face = scroll up/down (index finger), right face = confirm/back (thumb)
+- Left-handed: right face = scroll up/down (index finger), left face = confirm/back (thumb)
+- Handedness is a setting in the player profile — ESP32 remaps GPIO roles on load, no hardware changes
+
+**Safety — hold to enable:**
+- Holding the safety button enables the 4 nav buttons
+- Releasing immediately locks them again
+- Prevents accidental menu inputs during combat
+- Implemented as `safetyEngaged: boolean` in the input config — button handler checks it before passing any input to game engine
+
+### Armband
+
+- Landscape TFT display on the inner forearm
+- Two independent watch-style strap sets — one near each short end of the display, each wrapping fully around the forearm circumference and clasping on the outer side
+- Adjustable — each strap tightens/loosens independently for different forearm sizes/shapes
+- Can be positioned anywhere from mid-forearm to near-elbow (user preference, saved in profile)
+- No touch screen — all input comes from blaster buttons
+- Display inverts 180° in software based on arm setting (left arm = normal, right arm = flipped) so it reads upright when glancing at inner forearm
+- Arm preference stored in player profile, ESP32 reads on boot
+
+**Display contexts (all driven by same gun buttons):**
+
+| Context | Trigger | Radar visible |
+|---------|---------|---------------|
+| Pre-game setup | Game not started | No |
+| In-game HUD | Game active | Yes |
+| Comms menu | Safety held + comms mode | No — radar hides |
+| Shot type select | Safety held + shot mode | No — radar hides |
+
+**In-game HUD shows:**
+- Health bar + HP value
+- Score
+- Shot type
+- Class
+- Match timer
+- Radar (proximity only — see below)
+- Last comms message received
+
+**Pre-game setup screens (navigated with gun buttons):**
+- Select user profile
+- Select class
+- Select team
+- Set handedness (left/right)
+- Set arm (left/right) — controls display inversion
+
+### Headband
+
+- Worn on the head — IR receivers detect incoming shots that hit the head
+- Two IR receivers, one on each side of the headband
+- Wired back to the vest ESP32 (same as blaster and armband cable pattern)
+- Headshots deal more damage than body shots via a damage multiplier
+
+**Headshot multiplier:**
+- Default multiplier value TBD (set as a pre-game/host config option)
+- Sniper class has an enhanced headshot multiplier as part of their class ability — scales with level
+- Other classes use the default multiplier
+- Multiplier is a configurable value in game settings, not hardcoded
+
+### Proximity Radar
+
+- Built on ESP32 BLE RSSI — no extra hardware required
+- Each vest broadcasts a BLE beacon every ~200ms with player ID + team
+- Other vests scan for beacons and read signal strength
+- RSSI mapped to 3 proximity zones — smoothed with rolling average to prevent flickering
+
+| Zone | Distance | Dot position |
+|------|----------|--------------|
+| Close | < 5m | Inner ring |
+| Medium | 5–15m | Mid ring |
+| Far | > 15m | Outer ring |
+| Out of range | — | Hidden |
+
+- Dot only moves toward/away from center — no directional data (BLE can't provide direction)
+- Friendly dots shown in team color, enemy dots in red
+- True directional radar (dot moves around the ring) requires UWB hardware — Phase 5 consideration
+
+### Hardware Platform
+
+**ESP32** — confirmed platform for Phase 3+.
+- Low cost
+- WiFi + Bluetooth built in (BLE used for proximity radar)
+- Good hobby ecosystem
+- Single unit drives all peripherals via GPIO, SPI, I2C, PWM
+
+### Phase Build Order
+
+| Phase | Focus |
+|-------|-------|
+| 1 | Pure TypeScript simulation ✅ |
+| 2 | Local game engine — events, state, cooldowns ← current |
+| 3 | Vest ESP32 + IR receivers + LED strip + buzzer |
+| 4 | Braided gun cable + blaster buttons + IR emitter + barrel LED + armband display + headband |
+| 5 | BLE proximity radar + display polish + comms system |

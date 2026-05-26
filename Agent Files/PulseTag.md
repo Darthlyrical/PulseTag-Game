@@ -84,6 +84,14 @@ Players fire IR signals at each other to score hits and reduce health.
 ### Initial Cooldown
 300ms between shots
 
+### Barrel Tip LED
+
+- Located at the barrel tip alongside the IR emitter
+- Blinks on every shot fired
+- Color reflects the currently active shot type
+- Exact color per shot type: TBD
+- No extra wiring needed — same location as IR emitter
+
 ### Shot Types (Future Ideas)
 - standard shot
 - charged shot
@@ -718,9 +726,9 @@ Players choose a class before the match. Classes define base stats, available sh
 
 **Shot types:** Charged only (higher base damage than other classes, scales with level)
 
-**Ability:** Extended invulnerability window after taking a hit
+**Ability:** Extended invulnerability window after taking a hit + enhanced headshot multiplier. Sniper's headshot multiplier is higher than the default and scales with level — rewarding precision aim.
 
-**Notes:** One trade at a time. High risk, high reward. Punishes players who miss.
+**Notes:** One trade at a time. High risk, high reward. Punishes players who miss. Headshot bonus makes every shot placement matter.
 
 ---
 
@@ -769,6 +777,49 @@ Players choose a class before the match. Classes define base stats, available sh
 - Cannot heal enemies
 
 **Notes:** Most team-dependent class. Useless in 1v1, strongest class in coordinated team play.
+
+---
+
+# Headshot Mechanic
+
+Last Updated: 2026-05-26
+
+## Overview
+
+Headshots deal bonus damage via a configurable multiplier. Detected by IR receivers on the headband — a separate wearable wired back to the vest ESP32.
+
+## Hardware
+
+- Headband with two IR receivers (one each side)
+- Wired to vest ESP32 — same pattern as blaster and armband cables
+- No processor or battery on the headband itself
+
+## Damage Multiplier
+
+- Applied on top of the shot type's base damage
+- Default multiplier: TBD — set as a pre-game host config option
+- Sniper class gets an enhanced headshot multiplier above the default, scales with level
+- All other classes use the default multiplier
+
+## How to Apply
+
+```
+headshot damage = base shot damage × headshot multiplier
+```
+
+For example (placeholder values):
+- Standard shot (2 dmg) × 2.0 multiplier = 4 headshot damage
+- Charged shot (3 dmg) × 2.0 multiplier = 6 headshot damage
+
+## Simulation (Phase 2)
+
+In the TypeScript simulation, headshots will be modeled by passing a `isHeadshot: boolean` flag on the `ShotEvent`. The multiplier will be read from game config and applied in `combat.ts`.
+
+## In-game feedback
+
+- Distinct buzzer tone on headshot received
+- LED flash pattern on vest different from body hit
+- Arm piece HUD shows "HEADSHOT" briefly on the shooter's display
 
 ---
 

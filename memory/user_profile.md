@@ -22,3 +22,6 @@ Learning TypeScript (and embedded systems) through building a real hardware proj
 - Confidence dips during complex phases
 
 **How to apply:** Build small vertical slices. Explain concepts before showing code. Use inline comments liberally. Don't expand scope unless asked. If user seems overwhelmed, break things down smaller.
+
+**VS Code skills learned:**
+- Multi-cursor: `Option + click` to place individually, `Cmd + Option + ↓` to add cursor below, `Cmd + Shift + L` to select all matching instances at once
