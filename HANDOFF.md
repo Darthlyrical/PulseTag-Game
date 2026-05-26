@@ -171,7 +171,7 @@ All hardware design was diagrammed and locked in during a planning session on 20
 
 ### System Architecture
 
-One ESP32 and one LiPo battery live in the vest. They power and drive everything — the armband display and the blaster are both dumb hardware wired back to the single brain.
+One ESP32 and one LiPo battery live in the vest. They power and drive everything — the armband display, blaster, and headband are all dumb hardware wired back to the single brain.
 
 ```
 VEST (ESP32 + LiPo)
@@ -199,7 +199,7 @@ HEADBAND (input only — no processor, no battery)
 
 ### Cable Routing
 
-Two separate cable paths, both originating from the vest:
+Three separate cable paths, all originating from the vest:
 
 **Gun cable:**
 - Exits the bottom of the vest
@@ -212,6 +212,12 @@ Two separate cable paths, both originating from the vest:
 - Routes from the vest through the chest area near the armpit
 - Runs down the inner arm to the armband display
 - Shorter run, no armored housing needed — tucked under armband strap
+
+**Headband cable:**
+- Routes from the vest up through the back of the collar area
+- Runs up the back of the neck to the headband
+- Thin, lightweight cable — minimal movement interference
+- Tucked under clothing or along the inside of a collar/hood where possible
 
 ### Vest
 
