@@ -880,3 +880,91 @@ git branch
 ```
 The branch with `*` is your current one.
 
+
+---
+
+# Game Modes
+
+Last Updated: 2026-05-26
+
+PulseTag supports multiple game modes selectable in pre-game setup. Modes differ in scoring, classes, ammo, and win conditions.
+
+---
+
+## Mode Overview
+
+| Mode | Classes | Leveling | Ammo | Win Condition |
+|------|---------|----------|------|---------------|
+| Classic | No | No | Unlimited or limited (setting) | First to score limit or last standing |
+| Ranked | Yes | Yes | Limited (NFC restock) | First to score limit or last standing |
+| Time Attack | No | No | Unlimited or limited (setting) | Most points when timer ends |
+
+---
+
+## Classic Mode
+
+- No classes — all players use the same base stats and shot types
+- No leveling or persistent progression
+- Ammo: unlimited by default, can be set to limited in pre-game setup
+- Win condition: first to reach the score limit, or last player standing
+
+---
+
+## Ranked Mode
+
+- Full class system with abilities, leveling, and persistent progression
+- Limited ammo — NFC tags around the arena restock ammo (see Ammo System below)
+- Win condition: first to reach the score limit, or last player standing
+- Disabling shots, shot type selection, and all arm piece features active
+
+---
+
+## Time Attack Mode
+
+- Classic ruleset — no classes, no leveling
+- A match timer is set in pre-game setup (adjustable length, TBD default)
+- Both players respawn after elimination — Time Attack plays until the clock runs out
+
+**Starting points:** 100 each
+
+**Scoring:**
+
+| Event | Shooter effect | Target effect |
+|-------|---------------|---------------|
+| Vest hit | +50 pts | -1 pt |
+| Headshot | +100 pts | -1 pt |
+| Elimination | +300 pts | Halve current points |
+
+**Rules:**
+- Score cannot go below 0 (floor at 0)
+- On elimination: target respawns after 10 seconds at full health, match continues
+- Winner: player with the most points when the timer expires
+- Tie: TBD
+
+---
+
+# Ammo System
+
+Last Updated: 2026-05-26
+
+## Overview
+
+Ammo is **limited by default** in Ranked mode. Players carry a finite number of shots and must manage their ammo throughout the match.
+
+**Unlimited ammo** is available as a toggle in pre-game setup for Classic and Time Attack modes.
+
+## NFC Restock
+
+Physical NFC tags are placed around the play area. When a player taps the tag (with their blaster or vest), their ammo is restocked.
+
+- NFC tags are a hardware feature (Phase 3+)
+- Tag placement is part of arena setup — different layouts for different scenarios
+- In simulation (Phase 1/2): ammo restock modeled as a function call `restockAmmo(playerId)`
+
+## Ammo Design (TBD)
+
+- Starting ammo count per shot type: TBD
+- Whether different shot types cost different ammo: TBD
+- Whether disabling shots pull from a shared ammo pool or their own charge pool (currently they have 3 dedicated charges regardless)
+- NFC tag restock amount: TBD (full refill vs partial)
+

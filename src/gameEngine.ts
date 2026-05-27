@@ -1,4 +1,4 @@
-import { GameStatus, Player, ShotEvent } from "./types";
+import { GameStatus, Player, ShotEvent, ShotType, CommsSignal} from "./types";
 import { processHit } from "./combat";
 import { createPlayer } from "./player";
 
@@ -17,8 +17,8 @@ let state: GameState = {
   score: { red: 0, blue: 0 },
 };
 
-function sleep(ms: number): Promise<void>{
-  return new Promise((resolve) => setTimeout(resolve, ms))
+function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function startGame(): Promise<void> {
@@ -33,8 +33,13 @@ export function getState(): GameState {
 
 export function fireShot(shot: ShotEvent): void {
   const target = state.players.find((player) => player.id !== shot.shooterId);
+  const shooter = state.players.find((player) => player.id === shot.shooterId);
 
-  if (!target) return;
+  if (!target || !shooter) return;
+
+  if (shooter.disabledUntil > Date.now()) return;
+
+  if (shot.shotType === "disabling" && shooter.disablingCharges === 0) return;
 
   const result = processHit(target, shot, state.status);
 
@@ -45,9 +50,29 @@ export function fireShot(shot: ShotEvent): void {
     player.id === result.updatedPlayer.id ? result.updatedPlayer : player,
   ) as [Player, Player];
 
-  state.score[shot.shooterTeam]++;
-
-  if (state.score[shot.shooterTeam] >= 5) {
-    state.status = 'finished'
+  if (result.type === "disabled") {
+    state.players = state.players.map((player) =>
+      player.id === shot.shooterId
+        ? { ...player, disablingCharges: shooter.disablingCharges - 1 }
+        : player,
+    ) as [Player, Player];
   }
+  if (result.type === "hit" || result.type === "eliminated") {
+    state.score[shot.shooterTeam]++;
+  }
+  if (state.score[shot.shooterTeam] >= 5) {
+    state.status = "finished";
+  }
+}
+
+export function selectShotType(playerId: number, shotType: ShotType): void {
+  state.players = state.players.map((player) =>
+    player.id === playerId ? { ...player, shotType } : player,
+  ) as [Player, Player];
+}
+
+export function sendComms(senderId: number, signal: CommsSignal): void {
+  const sender = state.players.find((player) => player.id === senderId);
+  if (!sender) return;
+  console.log(`[COMMS] ${sender.name} → ${signal}`);
 }

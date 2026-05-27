@@ -24,7 +24,7 @@ This is a living document. It gets updated every time work is pushed to the repo
 
 Phase 1 simulation is fully working. The terminal simulation runs a complete match, processes shots, tracks health and score, and declares a winner.
 
-Phase 2 is in progress. Countdown is fully complete — `startGame()` is async with a 3-second sleep, and `index.ts` is wrapped in `async main()`. Arm piece Phases A, B, and C are done and compiling clean. Phase D (gameEngine updates) is next.
+Phase 2 is in progress. Countdown is fully complete — `startGame()` is async with a 3-second sleep, and `index.ts` is wrapped in `async main()`. Arm piece Phases A through D are done and compiling clean. Phase E (armPiece.ts display) is next.
 
 ---
 
@@ -62,14 +62,15 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 - [x] Phase 2: Arm piece Phase A — `types.ts` updated with `ShotType`, `CommsSignal`, new `Player` fields (`shotType`, `disabledUntil`, `disablingCharges`), `shotType` on `ShotEvent`, `"disabled"` and `"already_disabled"` on `HitResult`
 - [x] Phase 2: Arm piece Phase B — `player.ts` updated with new field defaults (`shotType: "standard"`, `disabledUntil: 0`, `disablingCharges: 3`)
 - [x] Phase 2: Arm piece Phase C — `combat.ts` updated with damage lookup table, disabling shot logic, already-disabled guard, and disabledUntil reset on damage
+- [x] Phase 2: Arm piece Phase D — `gameEngine.ts` updated with disable guard, charge guard, disabling charge decrement, score fix (hit/eliminated only), `selectShotType()`, and `sendComms()`
 - [x] Hardware design session — full physical system designed and diagrammed (see Hardware Design section below)
+- [x] Design session — game modes defined (Classic, Ranked, Time Attack) and ammo system planned (see Agent Files/PulseTag.md)
 
 ---
 
 ## What's Next
 
-- [ ] Phase 2: Arm piece — Phase D: update `gameEngine.ts` (disable guard, charge guard, selectShotType, sendComms) ← NEXT
-- [ ] Phase 2: Arm piece — Phase E: new `armPiece.ts` (showArmPiece display)
+- [ ] Phase 2: Arm piece — Phase E: new `armPiece.ts` (showArmPiece display) ← NEXT
 - [ ] Phase 2: Add cooldown logic (300ms between shots)
 - [ ] Phase 2: Add invulnerability timer (~1 second after being hit)
 - [ ] Phase 2: Add respawn timer (~5 seconds after elimination)
@@ -180,7 +181,8 @@ VEST (ESP32 + LiPo)
   ├── Buzzer                 (hit + elimination + respawn sounds)
   ├── BLE radio              (built-in ESP32 — cross-player proximity)
   ├── [cable → armband]      (display output via SPI/I2C)
-  └── [cable → blaster]      (GPIO input lines + IR emitter output)
+  ├── [cable → blaster]      (GPIO input lines + IR emitter output)
+  └── [cable → headband]     (GPIO input lines — headshot detection)
 
 ARMBAND (display only — no processor, no battery)
   └── Landscape TFT display  (driven by vest ESP32)
