@@ -9,4 +9,4 @@ When walking the user through writing code, provide partial scaffolding with int
 
 **Why:** More active learning — filling in blanks builds understanding better than copying complete code.
 
-**How to apply:** Show the structure, explain what each blank should be, then wait for the user to attempt it before correcting or confirming.
+**How to apply:** Show the scaffold with `_______` blanks inline in the code. Below the scaffold, provide a word bank of answers — always shuffle the word bank order so the answers don't map 1-to-1 with the blanks. This makes the user actually think rather than just matching by position.

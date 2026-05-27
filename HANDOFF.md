@@ -24,7 +24,7 @@ This is a living document. It gets updated every time work is pushed to the repo
 
 Phase 1 simulation is fully working. The terminal simulation runs a complete match, processes shots, tracks health and score, and declares a winner.
 
-Phase 2 is in progress. Countdown is fully complete — `startGame()` is async with a 3-second sleep, and `index.ts` is wrapped in `async main()`. Arm piece Phases A through D are done and compiling clean. Phase E (armPiece.ts display) is next.
+Phase 2 is in progress. Countdown is fully complete — `startGame()` is async with a 3-second sleep, and `index.ts` is wrapped in `async main()`. Arm piece Phases A through E are all done and compiling clean. Next: wire `showArmPiece()` into `index.ts`, then cooldown, invulnerability, and respawn.
 
 ---
 
@@ -64,6 +64,7 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 - [x] Phase 2: Arm piece Phase B — `player.ts` updated with new field defaults (`shotType: "standard"`, `disabledUntil: 0`, `disablingCharges: 3`)
 - [x] Phase 2: Arm piece Phase C — `combat.ts` updated with damage lookup table, disabling shot logic, already-disabled guard, and disabledUntil reset on damage
 - [x] Phase 2: Arm piece Phase D — `gameEngine.ts` updated with disable guard, charge guard, disabling charge decrement, score fix (hit/eliminated only), `selectShotType()`, and `sendComms()`
+- [x] Phase 2: Arm piece Phase E — `armband.ts` created with `showArmPiece()` — health bar, score, shot type, disable status with countdown, comms charges, and game status
 - [x] Hardware design session — full physical system designed and diagrammed (see Hardware Design section below)
 - [x] Design session — game modes defined (Classic, Ranked, Time Attack) and ammo system planned (see `Agent Files/PulseTag.md`)
 - [x] Design session — class system fully designed (Assault, Tank, Sniper, Scout, Demolitions, Support) with leveling plan (see `Agent Files/PulseTag.md`)
@@ -74,7 +75,7 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 
 ## What's Next
 
-- [ ] Phase 2: Arm piece — Phase E: new `armPiece.ts` (showArmPiece display) ← NEXT
+- [ ] Phase 2: Wire `showArmPiece()` into `index.ts` so it fires during simulation ← NEXT
 - [ ] Phase 2: Add cooldown logic (300ms between shots)
 - [ ] Phase 2: Add invulnerability timer (~1 second after being hit)
 - [ ] Phase 2: Add respawn timer (~5 seconds after elimination)
@@ -165,6 +166,7 @@ PulseTag-Game/
 │   ├── player.ts           ← createPlayer() factory function
 │   ├── combat.ts           ← processHit() — validates and applies a shot
 │   ├── gameEngine.ts       ← game state, startGame() (async), fireShot(), getState(), selectShotType(), sendComms()
+│   ├── armband.ts          ← showArmPiece() — arm piece display (health bar, score, shot type, status)
 │   └── index.ts            ← terminal simulation entry point, wrapped in async main()
 ├── dist/                   ← compiled JavaScript output (auto-generated, don't edit)
 ├── Agent Files/
