@@ -34,11 +34,12 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 |------|-------|
 | Players | 2 |
 | Teams | Red vs Blue |
-| Starting health | 5 |
-| Damage per hit | 1 |
+| Starting health | 100 HP |
 | Fire cooldown | 300ms |
 | Friendly fire | Disabled |
-| Win condition | First to 5 successful hits |
+| Win condition | First to score limit or last standing (mode dependent) |
+
+> Note: Starting health updated from 5 HP prototype value to 100 HP. Damage values per shot type are not final — to be revisited once all classes and shot types are balanced.
 
 ---
 
@@ -64,7 +65,10 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 - [x] Phase 2: Arm piece Phase C — `combat.ts` updated with damage lookup table, disabling shot logic, already-disabled guard, and disabledUntil reset on damage
 - [x] Phase 2: Arm piece Phase D — `gameEngine.ts` updated with disable guard, charge guard, disabling charge decrement, score fix (hit/eliminated only), `selectShotType()`, and `sendComms()`
 - [x] Hardware design session — full physical system designed and diagrammed (see Hardware Design section below)
-- [x] Design session — game modes defined (Classic, Ranked, Time Attack) and ammo system planned (see Agent Files/PulseTag.md)
+- [x] Design session — game modes defined (Classic, Ranked, Time Attack) and ammo system planned (see `Agent Files/PulseTag.md`)
+- [x] Design session — class system fully designed (Assault, Tank, Sniper, Scout, Demolitions, Support) with leveling plan (see `Agent Files/PulseTag.md`)
+- [x] Design session — headshot mechanic defined with hardware plan and simulation approach (see `Agent Files/PulseTag.md`)
+- [x] Design session — NFC ammo restock confirmed as armband tap (NFC reader on armband wired to vest ESP32)
 
 ---
 
@@ -81,6 +85,7 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 
 - Invulnerability check is disabled — players can be hit repeatedly with no protection window. Will be re-enabled in Phase 2 with a real timer.
 - Shots are hardcoded in `index.ts` — no real input system yet.
+- Health value in `createPlayer()` still set to 5 — needs updating to 100 HP when damage values are finalized.
 
 ---
 
@@ -93,12 +98,15 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 | Discriminated unions for `HitResult` | Forces exhaustive handling of all outcomes |
 | Vertical slices over big architecture | Prevents over-scoping and overwhelm |
 | Single ESP32 + LiPo in vest | One brain, one battery — drives everything. Less weight, fewer failure points, one charge |
-| All input from gun buttons | Consistent input model pre-game and in-game. Armband is display-only |
+| All input from gun buttons | Consistent input model pre-game and in-game. Armband is display-only for input |
 | Hold-to-enable safety | Safest option — buttons lock the moment thumb leaves. Can't accidentally leave unlocked |
 | Ambidextrous button layout | Same 4 GPIO pins, role flips in software via handedness setting in player profile |
 | BLE proximity radar (zones only) | ESP32 BLE built-in, no extra hardware. RSSI → 3 zones (close/medium/far). No direction — honest about what BLE can deliver |
 | Headband for headshot detection | IR receivers on the head add a skill-based damage layer without complicating the vest. Sniper class gets a multiplier bonus to reward precision. |
 | Barrel tip LED (shot type indicator) | Same location as IR emitter — doubles as visual feedback for firing and shot mode at a glance. No extra wiring run needed. |
+| Microswitch trigger with 3D printed lever | Better feel than a tactile button — satisfying click, real trigger pull motion. One GPIO pin, same as any other button. Lever is a printed part in the Phase 4 shell. |
+| 100 HP starting health | More granular damage scaling across shot types and classes. Old 5 HP value was a prototype placeholder. |
+| NFC restock via armband tap | Armband is on the inner forearm — natural motion to brush against a wall-mounted tag. No need to stop or fumble with the gun. NFC reader on armband wired back to vest ESP32. NFC tags are passive, no power needed at the station. |
 
 ---
 
@@ -156,11 +164,11 @@ PulseTag-Game/
 │   ├── types.ts            ← all shared types (Team, Player, ShotEvent, HitResult, etc.)
 │   ├── player.ts           ← createPlayer() factory function
 │   ├── combat.ts           ← processHit() — validates and applies a shot
-│   ├── gameEngine.ts       ← game state, startGame() (async), fireShot(), getState()
+│   ├── gameEngine.ts       ← game state, startGame() (async), fireShot(), getState(), selectShotType(), sendComms()
 │   └── index.ts            ← terminal simulation entry point, wrapped in async main()
 ├── dist/                   ← compiled JavaScript output (auto-generated, don't edit)
 ├── Agent Files/
-│   └── PulseTag.md         ← full project spec
+│   └── PulseTag.md         ← full project spec (classes, modes, ammo, leveling, headshots)
 └── memory/                 ← Claude's persistent memory (not game code)
 ```
 
@@ -172,25 +180,26 @@ All hardware design was diagrammed and locked in during a planning session on 20
 
 ### System Architecture
 
-One ESP32 and one LiPo battery live in the vest. They power and drive everything — the armband display, blaster, and headband are all dumb hardware wired back to the single brain.
+One ESP32 and one LiPo battery live in the vest. They power and drive everything — the armband, blaster, and headband are all dumb hardware wired back to the single brain.
 
 ```
 VEST (ESP32 + LiPo)
-  ├── IR receivers ×3       (hit detection, on vest panels)
+  ├── IR receivers ×3       (body hit detection, vest panels)
   ├── LED strip              (health + team color + hit flash)
   ├── Buzzer                 (hit + elimination + respawn sounds)
   ├── BLE radio              (built-in ESP32 — cross-player proximity)
-  ├── [cable → armband]      (display output via SPI/I2C)
+  ├── [cable → armband]      (display output + NFC reader data via SPI/I2C)
   ├── [cable → blaster]      (GPIO input lines + IR emitter output)
   └── [cable → headband]     (GPIO input lines — headshot detection)
 
-ARMBAND (display only — no processor, no battery)
-  └── Landscape TFT display  (driven by vest ESP32)
+ARMBAND (display + NFC reader — no processor, no battery)
+  ├── Landscape TFT display  (driven by vest ESP32)
+  └── NFC reader             (detects restock tags — wired to vest ESP32)
 
 BLASTER (inputs + IR emitter — no processor, no battery)
   ├── IR emitter             (barrel tip — fires shots)
   ├── LED                    (barrel tip — blinks on fire, color = shot type, TBD colors)
-  ├── Trigger                (GPIO → vest ESP32)
+  ├── Trigger                (microswitch + 3D printed lever — GPIO → vest ESP32)
   ├── Safety button          (GPIO → vest ESP32, hold-to-enable)
   ├── Nav buttons ×4         (2 per side — GPIO → vest ESP32)
   └── Confirm + back ×2      (GPIO → vest ESP32, thumb side)
@@ -212,7 +221,8 @@ Three separate cable paths, all originating from the vest:
 
 **Armband cable:**
 - Routes from the vest through the chest area near the armpit
-- Runs down the inner arm to the armband display
+- Runs down the inner arm to the armband
+- Carries both display signal and NFC reader data back to vest ESP32
 - Shorter run, no armored housing needed — tucked under armband strap
 
 **Headband cable:**
@@ -233,10 +243,11 @@ Three separate cable paths, all originating from the vest:
 
 - M16-style long barrel
 - IR emitter at the barrel tip
+- LED at the barrel tip alongside the IR emitter — blinks on every shot, color changes based on active shot type (exact colors TBD)
+- Trigger: microswitch with a 3D printed lever — pivots in the grip, depresses the microswitch on pull, one GPIO pin to the ESP32. Lever is a Phase 4 printed part.
 - 4 nav buttons total — 2 on each face of the barrel (left face, right face), clustered near the front of the barrel in the support hand zone
 - Confirm + back buttons in the thumb zone (same face as nav buttons, same side — determined by handedness)
 - Safety button on the top-back of the gun in the trigger hand thumb zone
-- LED at the barrel tip alongside the IR emitter — blinks on every shot, color changes based on active shot type (exact colors TBD)
 
 **Ambidextrous button layout:**
 - Same 4 GPIO pins regardless of handedness
@@ -253,6 +264,7 @@ Three separate cable paths, all originating from the vest:
 ### Armband
 
 - Landscape TFT display on the inner forearm
+- NFC reader chip also on the armband — player taps inner forearm against wall-mounted NFC tag to restock ammo
 - Two independent watch-style strap sets — one near each short end of the display, each wrapping fully around the forearm circumference and clasping on the outer side
 - Adjustable — each strap tightens/loosens independently for different forearm sizes/shapes
 - Can be positioned anywhere from mid-forearm to near-elbow (user preference, saved in profile)
@@ -289,14 +301,29 @@ Three separate cable paths, all originating from the vest:
 
 - Worn on the head — IR receivers detect incoming shots that hit the head
 - Two IR receivers, one on each side of the headband
-- Wired back to the vest ESP32 (same as blaster and armband cable pattern)
+- Wired back to the vest ESP32 via cable routed up the back of the neck
 - Headshots deal more damage than body shots via a damage multiplier
 
 **Headshot multiplier:**
 - Default multiplier value TBD (set as a pre-game/host config option)
-- Sniper class has an enhanced headshot multiplier as part of their class ability — scales with level
-- Other classes use the default multiplier
+- Sniper class has an enhanced headshot multiplier above the default, scales with level
+- All other classes use the default multiplier
 - Multiplier is a configurable value in game settings, not hardcoded
+
+**Headshot feedback:**
+- Distinct buzzer tone on headshot received (different from body hit)
+- Different LED flash pattern on vest
+- Shooter's arm piece briefly shows "HEADSHOT"
+
+### NFC Ammo Restock
+
+- Physical NFC tags mounted around the play area act as restock stations
+- Player taps their **armband** against the tag — natural inner forearm motion, no fumbling with the gun
+- NFC reader on armband detects the tag and signals the vest ESP32
+- ESP32 triggers `restockAmmo(playerId)` in the game engine
+- NFC tags are fully passive — no power needed at the station
+- Tag placement is part of arena setup — configurable for different game layouts
+- In simulation (Phase 1/2): modeled as a direct `restockAmmo(playerId)` function call
 
 ### Proximity Radar
 
@@ -331,5 +358,5 @@ Three separate cable paths, all originating from the vest:
 | 1 | Pure TypeScript simulation ✅ |
 | 2 | Local game engine — events, state, cooldowns ← current |
 | 3 | Vest ESP32 + IR receivers + LED strip + buzzer |
-| 4 | Braided gun cable + blaster buttons + IR emitter + barrel LED + armband display + headband |
+| 4 | Braided gun cable + blaster (microswitch trigger + buttons) + IR emitter + barrel LED + armband (display + NFC reader) + headband |
 | 5 | BLE proximity radar + display polish + comms system |
