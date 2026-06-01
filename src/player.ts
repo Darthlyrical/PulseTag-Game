@@ -7,7 +7,7 @@ export function createPlayer(id: number, name: string, team: Team): Player {
     id,
     name,
     team,
-    health: 5,
+    health: 100,
     status: "alive",
     shotType: "standard",
     disabledUntil: 0,

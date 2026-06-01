@@ -66,6 +66,7 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 - [x] Phase 2: Arm piece Phase D — `gameEngine.ts` updated with disable guard, charge guard, disabling charge decrement, score fix (hit/eliminated only), `selectShotType()`, and `sendComms()`
 - [x] Phase 2: Arm piece Phase E — `armband.ts` created with `showArmPiece()` — health bar, score, shot type, disable status with countdown, comms charges, and game status
 - [x] Phase 2: `showArmPiece()` wired into `index.ts` — called for both players after shots resolve; displays arm piece readout in terminal
+- [x] Phase 2: `createPlayer()` health updated from 5 → 100 — health bar now renders correctly
 - [x] Hardware design session — full physical system designed and diagrammed (see Hardware Design section below)
 - [x] Design session — game modes defined (Classic, Ranked, Time Attack) and ammo system planned (see `Agent Files/PulseTag.md`)
 - [x] Design session — class system fully designed (Assault, Tank, Sniper, Scout, Demolitions, Support) with leveling plan (see `Agent Files/PulseTag.md`)
@@ -76,7 +77,6 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 
 ## What's Next
 
-- [ ] Phase 2: Update `createPlayer()` health from 5 → 100 (health bar displays correctly after this)
 - [ ] Phase 2: Add cooldown logic (300ms between shots) ← NEXT
 - [ ] Phase 2: Add invulnerability timer (~1 second after being hit)
 - [ ] Phase 2: Add respawn timer (~5 seconds after elimination)
@@ -87,7 +87,6 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 
 - Invulnerability check is disabled — players can be hit repeatedly with no protection window. Will be re-enabled in Phase 2 with a real timer.
 - Shots are hardcoded in `index.ts` — no real input system yet.
-- Health value in `createPlayer()` still set to 5 — needs updating to 100 HP when damage values are finalized.
 
 ---
 
