@@ -67,6 +67,7 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 - [x] Phase 2: Arm piece Phase E — `armband.ts` created with `showArmPiece()` — health bar, score, shot type, disable status with countdown, comms charges, and game status
 - [x] Phase 2: `showArmPiece()` wired into `index.ts` — called for both players after shots resolve; displays arm piece readout in terminal
 - [x] Phase 2: `createPlayer()` health updated from 5 → 100 — health bar now renders correctly
+- [x] Phase 2: Cooldown logic added — `lastShotTime` field on `Player`; `fireShot()` rejects shots fired within 300ms of the shooter's last valid shot
 - [x] Hardware design session — full physical system designed and diagrammed (see Hardware Design section below)
 - [x] Design session — game modes defined (Classic, Ranked, Time Attack) and ammo system planned (see `Agent Files/PulseTag.md`)
 - [x] Design session — class system fully designed (Assault, Tank, Sniper, Scout, Demolitions, Support) with leveling plan (see `Agent Files/PulseTag.md`)
@@ -77,7 +78,7 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 
 ## What's Next
 
-- [ ] Phase 2: Add cooldown logic (300ms between shots) ← NEXT
+- [ ] Phase 2: Add invulnerability timer (~1 second after being hit) ← NEXT
 - [ ] Phase 2: Add invulnerability timer (~1 second after being hit)
 - [ ] Phase 2: Add respawn timer (~5 seconds after elimination)
 

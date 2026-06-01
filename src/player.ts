@@ -11,6 +11,7 @@ export function createPlayer(id: number, name: string, team: Team): Player {
     status: "alive",
     shotType: "standard",
     disabledUntil: 0,
-    disablingCharges: 3
+    disablingCharges: 3,
+    lastShotTime: 0,
   };
 }

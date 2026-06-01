@@ -1,4 +1,4 @@
-import { GameStatus, Player, ShotEvent, ShotType, CommsSignal} from "./types";
+import { GameStatus, Player, ShotEvent, ShotType, CommsSignal } from "./types";
 import { processHit } from "./combat";
 import { createPlayer } from "./player";
 
@@ -39,6 +39,8 @@ export function fireShot(shot: ShotEvent): void {
 
   if (shooter.disabledUntil > Date.now()) return;
 
+  if (shot.timestamp - shooter.lastShotTime < 300) return;
+
   if (shot.shotType === "disabling" && shooter.disablingCharges === 0) return;
 
   const result = processHit(target, shot, state.status);
@@ -57,6 +59,13 @@ export function fireShot(shot: ShotEvent): void {
         : player,
     ) as [Player, Player];
   }
+
+  state.players = state.players.map((player) =>
+    player.id === shot.shooterId
+      ? { ...player, lastShotTime: shot.timestamp }
+      : player,
+  ) as [Player, Player];
+  
   if (result.type === "hit" || result.type === "eliminated") {
     state.score[shot.shooterTeam]++;
   }

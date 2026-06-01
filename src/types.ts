@@ -33,6 +33,7 @@ export type Player = {
   shotType: ShotType;
   disabledUntil: number;
   disablingCharges: number;
+  lastShotTime: number;
 };
 
 //Represents a single shot being fired. timestamp will be used for the cooldown and invulnerability logic.
