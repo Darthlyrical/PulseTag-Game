@@ -1,4 +1,5 @@
 import { startGame, fireShot, getState } from "./gameEngine";
+import { showArmPiece } from "./armband";
 
 async function main() {
   await startGame();
@@ -65,6 +66,9 @@ async function main() {
 
   console.log("Game after shots");
   console.log(JSON.stringify(getState(), null, 2));
+
+  showArmPiece(1);
+  showArmPiece(2);
 
   const finalState = getState();
 
