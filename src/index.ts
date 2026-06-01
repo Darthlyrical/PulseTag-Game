@@ -13,6 +13,7 @@ async function main() {
     damage: 1,
     shotType: "standard",
     timestamp: Date.now(),
+    isHeadshot: false,
   });
   fireShot({
     shooterId: 2,
@@ -20,6 +21,7 @@ async function main() {
     damage: 1,
     shotType: "standard",
     timestamp: Date.now(),
+    isHeadshot: false,
   });
   fireShot({
     shooterId: 1,
@@ -27,6 +29,7 @@ async function main() {
     damage: 1,
     shotType: "standard",
     timestamp: Date.now(),
+    isHeadshot: false,
   });
   fireShot({
     shooterId: 2,
@@ -34,6 +37,7 @@ async function main() {
     damage: 1,
     shotType: "standard",
     timestamp: Date.now(),
+    isHeadshot: false,
   });
   fireShot({
     shooterId: 2,
@@ -41,6 +45,7 @@ async function main() {
     damage: 1,
     shotType: "standard",
     timestamp: Date.now(),
+    isHeadshot: false,
   });
   fireShot({
     shooterId: 2,
@@ -48,6 +53,7 @@ async function main() {
     damage: 1,
     shotType: "standard",
     timestamp: Date.now(),
+    isHeadshot: false,
   });
   fireShot({
     shooterId: 2,
@@ -55,6 +61,7 @@ async function main() {
     damage: 1,
     shotType: "standard",
     timestamp: Date.now(),
+    isHeadshot: false,
   });
   fireShot({
     shooterId: 2,
@@ -62,6 +69,7 @@ async function main() {
     damage: 1,
     shotType: "standard",
     timestamp: Date.now(),
+    isHeadshot: false,
   });
 
   console.log("Game after shots");

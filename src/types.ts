@@ -44,6 +44,7 @@ export type ShotEvent = {
   shooterTeam: Team;
   damage: number;
   timestamp: number;
+  isHeadshot: boolean;
 };
 
 //This is a discriminated union — the most powerful type here.

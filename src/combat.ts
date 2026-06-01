@@ -6,6 +6,8 @@ const shotDamage: Record<ShotType, number> = {
   charged: 3,
   disabling: 0,
 };
+
+const HEADSHOT_MULTIPLIER = 2
 // Returns the outcome of a shot — hit, eliminated, or ignored with a reason
 export function processHit(
   target: Player,
@@ -37,7 +39,7 @@ export function processHit(
   // if (target.status === "hit" || target.status === "respawning") {
   //   return { type: "ignored", reason: "invulnerable" };
   // }
-  const damage = shotDamage[shot.shotType];
+  const damage = shotDamage[shot.shotType] * (shot.isHeadshot ? HEADSHOT_MULTIPLIER : 1);
   const newHealth = target.health - damage;
 
   if (newHealth <= 0) {
