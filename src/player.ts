@@ -13,5 +13,6 @@ export function createPlayer(id: number, name: string, team: Team): Player {
     disabledUntil: 0,
     disablingCharges: 3,
     lastShotTime: 0,
+    invulnerableUntil:0
   };
 }

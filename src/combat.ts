@@ -20,6 +20,9 @@ export function processHit(
     return { type: "ignored", reason: "friendly_fire" };
   }
 
+  if (target.invulnerableUntil > shot.timestamp)
+    return { type: "ignored", reason: "invulnerable" };
+
   if (shot.shotType === "disabling" && target.disabledUntil > shot.timestamp) {
     return { type: "ignored", reason: "already_disabled" };
   }
@@ -34,18 +37,30 @@ export function processHit(
   // if (target.status === "hit" || target.status === "respawning") {
   //   return { type: "ignored", reason: "invulnerable" };
   // }
-  const damage = shotDamage[shot.shotType]
+  const damage = shotDamage[shot.shotType];
   const newHealth = target.health - damage;
 
   if (newHealth <= 0) {
     return {
       type: "eliminated",
-      updatedPlayer: { ...target, health: 0, status: "eliminated", disabledUntil: 0 },
+      updatedPlayer: {
+        ...target,
+        health: 0,
+        status: "eliminated",
+        disabledUntil: 0,
+        invulnerableUntil: 0,
+      },
     };
   }
 
   return {
     type: "hit",
-    updatedPlayer: { ...target, health: newHealth, status: "hit", disabledUntil: 0 },
+    updatedPlayer: {
+      ...target,
+      health: newHealth,
+      status: "hit",
+      disabledUntil: 0,
+      invulnerableUntil: shot.timestamp + 1000
+    },
   };
 }
