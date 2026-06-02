@@ -70,6 +70,7 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 - [x] Phase 2: Cooldown logic added — `lastShotTime` field on `Player`; `fireShot()` rejects shots fired within 300ms of the shooter's last valid shot
 - [x] Phase 2: Invulnerability timer added — `invulnerableUntil` field on `Player`; `processHit()` ignores shots against a player within 1 second of their last hit; resets to 0 on elimination
 - [x] Phase 2: Headshot mechanic added — `isHeadshot: boolean` on `ShotEvent`; `HEADSHOT_MULTIPLIER = 2` in `combat.ts`; headshots deal double damage
+- [x] Phase 2: Respawn timer added — `respawnAt` field on `Player`; set to `shot.timestamp + 5000` on elimination; `checkRespawns()` in `gameEngine.ts` revives players at full health when time expires; `sleep` exported for use in `index.ts`
 - [x] Hardware design session — full physical system designed and diagrammed (see Hardware Design section below)
 - [x] Design session — game modes defined (Classic, Ranked, Time Attack) and ammo system planned (see `Agent Files/PulseTag.md`)
 - [x] Design session — class system fully designed (Assault, Tank, Sniper, Scout, Demolitions, Support) with leveling plan (see `Agent Files/PulseTag.md`)
@@ -80,7 +81,7 @@ Phase 2 is in progress. Countdown is fully complete — `startGame()` is async w
 
 ## What's Next
 
-- [ ] Phase 2: Add respawn timer (~5 seconds after elimination) ← NEXT
+- [ ] Phase 3: Vest hardware — ESP32 + IR receivers + LED strip + buzzer
 - [ ] Phase 2: Add invulnerability timer (~1 second after being hit)
 - [ ] Phase 2: Add respawn timer (~5 seconds after elimination)
 

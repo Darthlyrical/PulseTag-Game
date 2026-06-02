@@ -17,7 +17,7 @@ let state: GameState = {
   score: { red: 0, blue: 0 },
 };
 
-function sleep(ms: number): Promise<void> {
+export function sleep(ms: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
@@ -52,6 +52,14 @@ export function fireShot(shot: ShotEvent): void {
     player.id === result.updatedPlayer.id ? result.updatedPlayer : player,
   ) as [Player, Player];
 
+  if (result.type === "eliminated") {
+    state.players = state.players.map((player) =>
+      player.id === result.updatedPlayer.id
+        ? { ...player, respawnAt: shot.timestamp + 5000 }
+        : player,
+    ) as [Player, Player];
+  }
+
   if (result.type === "disabled") {
     state.players = state.players.map((player) =>
       player.id === shot.shooterId
@@ -65,13 +73,24 @@ export function fireShot(shot: ShotEvent): void {
       ? { ...player, lastShotTime: shot.timestamp }
       : player,
   ) as [Player, Player];
-  
+
   if (result.type === "hit" || result.type === "eliminated") {
     state.score[shot.shooterTeam]++;
   }
   if (state.score[shot.shooterTeam] >= 5) {
     state.status = "finished";
   }
+}
+
+export function checkRespawns(): void {
+  const now = Date.now();
+  state.players = state.players.map((player) =>
+    player.status === "eliminated" &&
+    player.respawnAt > 0 &&
+    now >= player.respawnAt
+      ? { ...player, health: 100, status: "alive", respawnAt: 0 }
+      : player,
+  ) as [Player, Player];
 }
 
 export function selectShotType(playerId: number, shotType: ShotType): void {
