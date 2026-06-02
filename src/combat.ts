@@ -1,4 +1,4 @@
-import { Player, ShotEvent, HitResult, GameStatus, ShotType } from "./types";
+import { Player, ShotEvent, HitResult, GameStatus, ShotType, PlayerClass } from "./types";
 
 const shotDamage: Record<ShotType, number> = {
   standard: 2,
@@ -13,6 +13,7 @@ export function processHit(
   target: Player,
   shot: ShotEvent,
   gameStatus: GameStatus,
+  shooterClass: PlayerClass
 ): HitResult {
   if (gameStatus !== "active") {
     return { type: "ignored", reason: "game_not_active" };
@@ -24,6 +25,9 @@ export function processHit(
 
   if (target.invulnerableUntil > shot.timestamp)
     return { type: "ignored", reason: "invulnerable" };
+
+  if(target.playerClass === "tank" && shot.shotType === "disabling")
+    return { type: "ignored", reason:"immune_to_disabling"}
 
   if (shot.shotType === "disabling" && target.disabledUntil > shot.timestamp) {
     return { type: "ignored", reason: "already_disabled" };
@@ -39,7 +43,9 @@ export function processHit(
   // if (target.status === "hit" || target.status === "respawning") {
   //   return { type: "ignored", reason: "invulnerable" };
   // }
-  const damage = shotDamage[shot.shotType] * (shot.isHeadshot ? HEADSHOT_MULTIPLIER : 1);
+
+  const multiplier = shot.isHeadshot ? (shooterClass === "sniper" ? 2.5 : HEADSHOT_MULTIPLIER) : 1;
+  const damage = shotDamage[shot.shotType] * multiplier
   const newHealth = target.health - damage;
 
   if (newHealth <= 0) {

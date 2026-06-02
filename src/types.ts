@@ -2,6 +2,7 @@
 // Using a union instead of plain string means TypeScript will catch a typo like "erd" at compile time instead of silently breaking the game.
 export type Team = "red" | "blue";
 
+export type PlayerClass = "assault" | "tank" | "sniper" | "scout" | "support";
 //Same idea — a union of all the states a player can be in.
 // Anywhere you use a PlayerStatus, TypeScript knows exactly which values are valid.
 export type PlayerStatus = "alive" | "hit" | "respawning" | "eliminated";
@@ -31,11 +32,13 @@ export type Player = {
   health: number;
   status: PlayerStatus;
   shotType: ShotType;
+  playerClass: PlayerClass;
+  ammo: number;
   disabledUntil: number;
   disablingCharges: number;
   lastShotTime: number;
   invulnerableUntil: number;
-  respawnAt: number,
+  respawnAt: number;
 };
 
 //Represents a single shot being fired. timestamp will be used for the cooldown and invulnerability logic.
@@ -59,9 +62,8 @@ export type HitResult =
         | "friendly_fire"
         | "invulnerable"
         | "game_not_active"
-        | "already_disabled";
+        | "already_disabled"
+        | "immune_to_disabling";
     }
   | { type: "eliminated"; updatedPlayer: Player }
   | { type: "disabled"; updatedPlayer: Player };
-
-

@@ -1,5 +1,13 @@
-import { GameStatus, Player, ShotEvent, ShotType, CommsSignal } from "./types";
+import {
+  GameStatus,
+  Player,
+  ShotEvent,
+  ShotType,
+  CommsSignal,
+  PlayerClass,
+} from "./types";
 import { processHit } from "./combat";
+import { classConfigs } from "./classes";
 import { createPlayer } from "./player";
 
 type GameState = {
@@ -11,8 +19,8 @@ type GameState = {
 let state: GameState = {
   status: "waiting",
   players: [
-    createPlayer(1, "player1", "red"),
-    createPlayer(2, "player2", "blue"),
+    createPlayer(1, "player1", "red", "assault"),
+    createPlayer(2, "player2", "blue", "assault"),
   ],
   score: { red: 0, blue: 0 },
 };
@@ -39,11 +47,25 @@ export function fireShot(shot: ShotEvent): void {
 
   if (shooter.disabledUntil > Date.now()) return;
 
-  if (shot.timestamp - shooter.lastShotTime < 300) return;
+  if (
+    shot.timestamp - shooter.lastShotTime <
+    classConfigs[shooter.playerClass].cooldown
+  )
+    return;
 
   if (shot.shotType === "disabling" && shooter.disablingCharges === 0) return;
 
-  const result = processHit(target, shot, state.status);
+  const ammoCost =
+    shot.shotType === "charged" && shooter.playerClass === "sniper"
+      ? 2
+      : shot.shotType === "charged"
+        ? 3
+        : shot.shotType === "disabling"
+          ? 0
+          : 1;
+  if (shooter.ammo < ammoCost) return;
+
+  const result = processHit(target, shot, state.status, shooter.playerClass);
 
   if (result.type === "ignored") return;
 
@@ -70,13 +92,36 @@ export function fireShot(shot: ShotEvent): void {
 
   state.players = state.players.map((player) =>
     player.id === shot.shooterId
-      ? { ...player, lastShotTime: shot.timestamp }
+      ? {
+          ...player,
+          lastShotTime: shot.timestamp,
+          ammo: shooter.ammo - ammoCost,
+        }
       : player,
   ) as [Player, Player];
 
   if (result.type === "hit" || result.type === "eliminated") {
     state.score[shot.shooterTeam]++;
   }
+
+  if (
+    shooter.playerClass === "support" &&
+    (result.type === "hit" || result.type === "eliminated")
+  ) {
+    const healAmount = shot.isHeadshot ? 5 : 2;
+    state.players = state.players.map((player) =>
+      player.id === shot.shooterId
+        ? {
+            ...player,
+            health: Math.min(
+              player.health + healAmount,
+              classConfigs[shooter.playerClass].hp,
+            ),
+          }
+        : player,
+    ) as [Player, Player];
+  }
+
   if (state.score[shot.shooterTeam] >= 5) {
     state.status = "finished";
   }
@@ -94,8 +139,18 @@ export function checkRespawns(): void {
 }
 
 export function selectShotType(playerId: number, shotType: ShotType): void {
+  const player = state.players.find((p) => p.id === playerId);
+  if (!player) return;
+  if (!classConfigs[player.playerClass].allowedShotTypes.includes(shotType))
+    return;
+  state.players = state.players.map((p) =>
+    p.id === playerId ? { ...p, shotType } : p,
+  ) as [Player, Player];
+}
+
+export function restockAmmo(playerId: number): void {
   state.players = state.players.map((player) =>
-    player.id === playerId ? { ...player, shotType } : player,
+    player.id === playerId ? { ...player, ammo: 30 } : player,
   ) as [Player, Player];
 }
 
